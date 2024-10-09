@@ -53,6 +53,10 @@ static struct thead_generic_quirks sophgo_cv1800_quirks = {
 	.errata = THEAD_QUIRK_ERRATA_THEAD_PMU,
 };
 
+static struct thead_generic_quirks wuqi_tianshan_quirks = {
+	.errata = THEAD_QUIRK_ERRATA_THEAD_PMU,
+};
+
 static const struct fdt_match thead_generic_match[] = {
 	{ .compatible = "sophgo,cv1800b", .data = &sophgo_cv1800_quirks },
 	{ .compatible = "sophgo,cv1812h", .data = &sophgo_cv1800_quirks },
@@ -60,6 +64,7 @@ static const struct fdt_match thead_generic_match[] = {
 	{ .compatible = "sophgo,sg2002", .data = &sophgo_cv1800_quirks },
 	{ .compatible = "thead,th1520", .data = &thead_th1520_quirks },
 	{ .compatible = "canaan,kendryte-k230", .data = &canaan_k230_quirks },
+	{ .compatible = "wuqi,tianshan", .data = &wuqi_tianshan_quirks },
 	{ },
 };
 
