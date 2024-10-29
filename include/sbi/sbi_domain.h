@@ -15,6 +15,7 @@
 #include <sbi/sbi_types.h>
 #include <sbi/sbi_hartmask.h>
 #include <sbi/sbi_domain_context.h>
+#include <sbi/sbi_domain_data.h>
 
 struct sbi_scratch;
 
@@ -163,6 +164,8 @@ struct sbi_domain_memregion {
 struct sbi_domain {
 	/** Node in linked list of domains */
 	struct sbi_dlist node;
+	/** Internal state of per-domain data */
+	struct sbi_domain_data_priv data_priv;
 	/** Logical index of this domain */
 	u32 index;
 	/** HARTs assigned to this domain */
@@ -173,8 +176,6 @@ struct sbi_domain {
 	char name[64];
 	/** Possible HARTs in this domain */
 	const struct sbi_hartmask *possible_harts;
-	/** Contexts for possible HARTs indexed by hartindex */
-	struct sbi_context *hartindex_to_context_table[SBI_HARTMASK_MAX_BITS];
 	/** Array of memory regions terminated by a region with order zero */
 	struct sbi_domain_memregion *regions;
 	/** HART id of the HART booting this domain */
@@ -291,16 +292,6 @@ void sbi_domain_dump_all(const char *suffix);
  */
 int sbi_domain_register(struct sbi_domain *dom,
 			const struct sbi_hartmask *assign_mask);
-
-/**
- * Add a memory region to the root domain
- * @param reg pointer to the memory region to be added
- *
- * @return 0 on success
- * @return SBI_EALREADY if memory region conflicts with the existing one
- * @return SBI_EINVAL otherwise
- */
-int sbi_domain_root_add_memregion(const struct sbi_domain_memregion *reg);
 
 /**
  * Add a memory range with its flags to the root domain

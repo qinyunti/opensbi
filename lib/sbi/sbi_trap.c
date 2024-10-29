@@ -104,16 +104,12 @@ int sbi_trap_redirect(struct sbi_trap_regs *regs,
 {
 	ulong hstatus, vsstatus, prev_mode;
 	bool elp = false;
-#if __riscv_xlen == 32
-	bool prev_virt = (regs->mstatusH & MSTATUSH_MPV) ? true : false;
-#else
-	bool prev_virt = (regs->mstatus & MSTATUS_MPV) ? true : false;
-#endif
+	bool prev_virt = sbi_regs_from_virt(regs);
 	/* By default, we redirect to HS-mode */
 	bool next_virt = false;
 
 	/* Sanity check on previous mode */
-	prev_mode = (regs->mstatus & MSTATUS_MPP) >> MSTATUS_MPP_SHIFT;
+	prev_mode = sbi_mstatus_prev_mode(regs->mstatus);
 	if (prev_mode != PRV_S && prev_mode != PRV_U)
 		return SBI_ENOTSUPP;
 
@@ -354,6 +350,10 @@ struct sbi_trap_context *sbi_trap_handler(struct sbi_trap_context *tcntx)
 		rc  = sbi_store_access_handler(tcntx);
 		msg = "store fault handler failed";
 		break;
+	case CAUSE_DOUBLE_TRAP:
+		rc  = sbi_double_trap_handler(tcntx);
+		msg = "double trap handler failed";
+		break;
 	default:
 		/* If the trap came from S or U mode, redirect it there */
 		msg = "trap redirect failed";
@@ -365,7 +365,7 @@ trap_done:
 	if (rc)
 		sbi_trap_error(msg, rc, tcntx);
 
-	if (((regs->mstatus & MSTATUS_MPP) >> MSTATUS_MPP_SHIFT) != PRV_M)
+	if (sbi_mstatus_prev_mode(regs->mstatus) != PRV_M)
 		sbi_sse_process_pending_events(regs);
 
 	sbi_trap_set_context(scratch, tcntx->prev_context);
